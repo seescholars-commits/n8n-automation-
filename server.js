@@ -1,6 +1,4 @@
 
-console.log("Starting Squarespace automation server...");
-
 require("dotenv").config();
 
 const express = require("express");
@@ -13,7 +11,8 @@ app.use(express.json());
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
-    message: "Squarespace automation server is running"
+    message: "Squarespace automation server is running",
+    browserlessConfigured: Boolean(process.env.BROWSERLESS_TOKEN)
   });
 });
 
