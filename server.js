@@ -62,7 +62,10 @@ app.get("/test-browser", async (req, res) => {
 
     const context = browser.contexts()[0];
     const page = await context.newPage();
-    await page.goto("https://example.com");
+    await page.goto("https://account.squarespace.com/", {
+      waitUntil: "domcontentloaded",
+      timeout: 60000
+    });
 
     res.json({
       status: "success",
