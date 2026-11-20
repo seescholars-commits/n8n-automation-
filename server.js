@@ -56,7 +56,7 @@ app.get("/test-browser", async (req, res) => {
       throw new Error("Browserless token is missing");
     }
 
-    const url = `wss://production-sfo.browserless.io?token=${token}`;
+    const url = `wss://production-sfo.browserless.io?token=${token}&profile=seenepal-squarespace`;
 
     browser = await chromium.connectOverCDP(url);
 
