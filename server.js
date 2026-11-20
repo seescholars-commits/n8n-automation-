@@ -56,7 +56,7 @@ app.get("/test-browser", async (req, res) => {
       throw new Error("Browserless token is missing");
     }
 
-    const url = `wss://production-sfo.browserless.io?token=${token}&profile=seenepal-squarespace`;
+    const url = `wss://production-sfo.browserless.io/chromium/playwright?token=${token}&profile=seenepal-squarespace`;
 
     browser = await chromium.connectOverCDP(url);
 
@@ -69,8 +69,8 @@ app.get("/test-browser", async (req, res) => {
 
     res.json({
       status: "success",
-      message: "Render connected to Browserless",
-      pageTitle: await page.title()
+      pageTitle: await page.title(),
+      currentUrl: page.url()
     });
   } catch (error) {
     console.error("Browserless error:", error.message);
