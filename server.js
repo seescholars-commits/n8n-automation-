@@ -2,17 +2,47 @@
 require("dotenv").config();
 
 const express = require("express");
+const crypto = require("crypto");
 const { chromium } = require("playwright-core");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
+
+// Check that the request comes from our n8n workflow
+function authenticate(req, res, next) {
+  const suppliedSecret = req.get("x-automation-secret");
+  const expectedSecret = process.env.AUTOMATION_SECRET;
+
+  if (!expectedSecret || !suppliedSecret) {
+    return res.status(401).json({
+      status: "error",
+      message: "Authentication required"
+    });
+  }
+
+  const supplied = Buffer.from(suppliedSecret);
+  const expected = Buffer.from(expectedSecret);
+
+  if (
+    supplied.length !== expected.length ||
+    !crypto.timingSafeEqual(supplied, expected)
+  ) {
+    return res.status(401).json({
+      status: "error",
+      message: "Invalid authentication"
+    });
+  }
+
+  next();
+}
 
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
-    browserlessConfigured: Boolean(process.env.BROWSERLESS_TOKEN)
+    browserlessConfigured: Boolean(process.env.BROWSERLESS_TOKEN),
+    automationSecretConfigured: Boolean(process.env.AUTOMATION_SECRET)
   });
 });
 
@@ -33,27 +63,41 @@ app.get("/test-browser", async (req, res) => {
     const page = await browser.newPage();
     await page.goto("https://example.com");
 
-    const title = await page.title();
-
     res.json({
       status: "success",
       message: "Render connected to Browserless",
-      pageTitle: title
+      pageTitle: await page.title()
     });
-
   } catch (error) {
     console.error("Browserless error:", error.message);
 
     res.status(500).json({
       status: "error",
-      message: error.message
+      message: "Browserless connection failed"
     });
-
   } finally {
     if (browser) {
       await browser.close();
     }
   }
+});
+
+// Squarespace draft endpoint - browser automation will be added next
+app.post("/create-draft", authenticate, async (req, res) => {
+  const { studentNumber, title, content } = req.body;
+
+  if (!studentNumber || !title || !content) {
+    return res.status(400).json({
+      status: "error",
+      message: "studentNumber, title and content are required"
+    });
+  }
+
+  return res.status(501).json({
+    status: "pending",
+    message: "Authentication and request validation succeeded. Squarespace draft creation is not implemented yet.",
+    studentNumber
+  });
 });
 
 app.listen(PORT, () => {
