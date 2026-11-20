@@ -58,7 +58,7 @@ app.get("/test-browser", async (req, res) => {
 
     const url = `wss://production-sfo.browserless.io/chromium/playwright?token=${token}&profile=seenepal-squarespace`;
 
-    browser = await chromium.connectOverCDP(url);
+    browser = await chromium.connect(url);
 
     const context = browser.contexts()[0];
     const page = await context.newPage();
