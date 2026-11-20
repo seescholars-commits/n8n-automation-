@@ -60,7 +60,8 @@ app.get("/test-browser", async (req, res) => {
 
     browser = await chromium.connectOverCDP(url);
 
-    const page = await browser.newPage();
+    const context = browser.contexts()[0];
+    const page = await context.newPage();
     await page.goto("https://example.com");
 
     res.json({
